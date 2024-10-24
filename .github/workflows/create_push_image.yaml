@@ -1,0 +1,78 @@
+
+name: Test
+on:
+  workflow_call:
+    inputs:
+      - workflow_dispatch
+
+  build-images:
+    name: Build Docker Images
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to the container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}
+
+      - name: "Build Docker image release candidate"
+        uses: docker/build-push-action@v6
+        id: rc_image
+        with:
+          context: ./
+          push: false
+          load: true
+          tags: ghcr.io/${{ github.repository }}:rc
+
+      - name: Download Wiz CLI
+        run: curl -o wizcli https://downloads.wiz.io/wizcli/latest/wizcli-linux-amd64 && chmod +x wizcli
+
+      # - name: Authenticate to Wiz
+      #   run: ./wizcli auth --id "$WIZ_CLIENT_ID" --secret "$WIZ_CLIENT_SECRET"
+      #   env:
+      #     WIZ_CLIENT_ID: ${{ secrets.WIZ_CLIENT_ID }}
+      #     WIZ_CLIENT_SECRET: ${{ secrets.WIZ_CLIENT_SECRET }}
+
+      # - name: Run wiz-cli docker image scan
+      #   run: ./wizcli docker scan --image ghcr.io/${{ github.repository }}:rc --policy "Extensions Policy"
+
+      - name: Fetch digest of Docker image for Graph enrichment
+        run: |
+          echo "Digest before push: ${{ steps.rc_image.outputs.digest }}"
+          # ./wizcli docker tag --image ghcr.io/${{ github.repository }}:rc --digest ${{ steps.rc_image.outputs.digest }}
+
+      - name: "Build Docker image release candidate"
+        uses: docker/build-push-action@v6
+        id: rc_image
+        with:
+          context: ./
+          push: true
+          load: true
+          tags: ghcr.io/${{ github.repository }}:rc
+
+      - name: Fetch digest of Docker image for Graph enrichment
+        run: |
+          echo "Digest after push: ${{ steps.rc_image.outputs.digest }}"

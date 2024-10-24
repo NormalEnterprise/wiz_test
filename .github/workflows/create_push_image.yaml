@@ -64,7 +64,7 @@ jobs:
 
       - name: "Build Docker image release candidate"
         uses: docker/build-push-action@v6
-        id: rc_image
+        id: rc_image_push
         with:
           context: ./
           push: true
@@ -73,4 +73,4 @@ jobs:
 
       - name: Fetch digest of Docker image for Graph enrichment
         run: |
-          echo "Digest after push: ${{ steps.rc_image.outputs.digest }}"
+          echo "Digest after push: ${{ steps.rc_image_push.outputs.digest }}"

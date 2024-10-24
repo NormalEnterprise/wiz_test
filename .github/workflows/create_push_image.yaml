@@ -1,9 +1,6 @@
 
 name: Test
-on:
-  workflow_call:
-    inputs:
-      - workflow_dispatch
+on: workflow_dispatch
 
   build-images:
     name: Build Docker Images

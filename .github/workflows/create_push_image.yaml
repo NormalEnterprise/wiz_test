@@ -41,7 +41,7 @@ jobs:
         id: rc_image
         with:
           context: ./
-          push: false
+          push: true # Update
           load: true
           tags: ghcr.io/normalenterprise/wiz_test:rc
 

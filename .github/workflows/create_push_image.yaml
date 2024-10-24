@@ -34,7 +34,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/${{ github.repository }}
+          images: ghcr.io/normalenterprise/wiz_test
 
       - name: "Build Docker image release candidate"
         uses: docker/build-push-action@v6
@@ -43,7 +43,7 @@ jobs:
           context: ./
           push: false
           load: true
-          tags: ghcr.io/${{ github.repository }}:rc
+          tags: ghcr.io/normalenterprise/wiz_test:rc
 
       - name: Download Wiz CLI
         run: curl -o wizcli https://downloads.wiz.io/wizcli/latest/wizcli-linux-amd64 && chmod +x wizcli
@@ -60,7 +60,7 @@ jobs:
       - name: Fetch digest of Docker image for Graph enrichment
         run: |
           echo "Digest before push: ${{ steps.rc_image.outputs.digest }}"
-          # ./wizcli docker tag --image ghcr.io/${{ github.repository }}:rc --digest ${{ steps.rc_image.outputs.digest }}
+          # ./wizcli docker tag --image ghcr.io/normalenterprise/wiz_test:rc --digest ${{ steps.rc_image.outputs.digest }}
 
       - name: "Build Docker image release candidate"
         uses: docker/build-push-action@v6
@@ -69,7 +69,7 @@ jobs:
           context: ./
           push: true
           load: true
-          tags: ghcr.io/${{ github.repository }}:rc
+          tags: ghcr.io/normalenterprise/wiz_test:rc
 
       - name: Fetch digest of Docker image for Graph enrichment
         run: |

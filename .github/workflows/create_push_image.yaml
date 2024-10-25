@@ -41,7 +41,7 @@ jobs:
         id: rc_image
         with:
           context: ./
-          push: true # Update
+          push: true
           load: true
           tags: ghcr.io/normalenterprise/wiz_test:rc
 
@@ -65,15 +65,3 @@ jobs:
           echo "Tag WizCLI 2"
           ./wizcli docker tag --image ghcr.io/normalenterprise/wiz_test:rc
 
-      - name: "Build Docker image release candidate"
-        uses: docker/build-push-action@v6
-        id: rc_image_push
-        with:
-          context: ./
-          push: true
-          load: true
-          tags: ghcr.io/normalenterprise/wiz_test:rc
-
-      - name: Fetch digest of Docker image for Graph enrichment
-        run: |
-          echo "Digest after push: ${{ steps.rc_image_push.outputs.digest }}"

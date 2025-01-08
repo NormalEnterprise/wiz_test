@@ -83,6 +83,7 @@ jobs:
           gh pr comment ${{ github.event.pull_request.number }} --body "$RUNNER_OUTPUT"
         env:
           RUNNER_OUTPUT: ${{ steps.run-cli.outputs.cli_output }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload SARIF file
         uses: github/codeql-action/upload-sarif@v3

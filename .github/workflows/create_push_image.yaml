@@ -66,8 +66,8 @@ jobs:
       - name: Run wiz-cli docker image scan
         id: run-cli
         run: |
-          output=$(./wizcli docker scan --image ghcr.io/normalenterprise/wiz_test:rc --policy "jannasch - vcs - vuln" --tag github_action_run_id=${{ github.run_id }} --output output_scan.sarif,sarif)
-          echo "::set-output name=cli_output::$output"
+          # Store wiz output as sarif and human readable format, -C for no color, -S for no style
+          ./wizcli docker scan --image ghcr.io/normalenterprise/wiz_test:rc --policy "jannasch - vcs - vuln" --tag github_action_run_id=${{ github.run_id }} --policy-hits-only --output output_scan.sarif,sarif --output results.txt,human -C -S
 
       # - name: Fetch digest of Docker image for Graph enrichment
       #   run: |
@@ -80,9 +80,10 @@ jobs:
       - name: Comment on PR
         if: ${{ github.event_name == 'pull_request' }}
         run: |
-          gh pr comment ${{ github.event.pull_request.number }} --body "$RUNNER_OUTPUT"
+          # Comment results into PR
+          gh pr comment ${{ github.event.pull_request.number }} --body-file results.txt
         env:
-          RUNNER_OUTPUT: ${{ steps.run-cli.outputs.cli_output }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload SARIF file
         uses: github/codeql-action/upload-sarif@v3

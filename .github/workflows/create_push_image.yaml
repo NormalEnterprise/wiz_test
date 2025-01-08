@@ -1,6 +1,12 @@
 
 name: Test
 on: workflow_dispatch
+permissions:
+  security-events: write
+  pull-requests: read
+  contents: write
+  statuses: write
+  actions: read
 
 jobs:
   build-images:

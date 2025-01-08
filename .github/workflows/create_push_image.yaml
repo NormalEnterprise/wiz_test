@@ -55,13 +55,21 @@ jobs:
           WIZ_CLIENT_SECRET: ${{ secrets.WIZ_CLIENT_SECRET }}
 
       - name: Run wiz-cli docker image scan
-        run: ./wizcli docker scan --image ghcr.io/normalenterprise/wiz_test:rc --policy "jannasch - vcs - vuln" --tag github_action_run_id=${{ github.run_id }}
+        run: ./wizcli docker scan --image ghcr.io/normalenterprise/wiz_test:rc --policy "jannasch - vcs - vuln" --tag github_action_run_id=${{ github.run_id }} --output output_scan.sarif,sarif
 
-      - name: Fetch digest of Docker image for Graph enrichment
-        run: |
-          echo "Digest before push: ${{ steps.rc_image.outputs.digest }}"
-          echo "Tag WizCLI"
-          ./wizcli docker tag --image ghcr.io/normalenterprise/wiz_test:rc --digest ${{ steps.rc_image.outputs.digest }}
-          echo "Tag WizCLI 2"
-          ./wizcli docker tag --image ghcr.io/normalenterprise/wiz_test:rc
+      # - name: Fetch digest of Docker image for Graph enrichment
+      #   run: |
+      #     echo "Digest before push: ${{ steps.rc_image.outputs.digest }}"
+      #     echo "Tag WizCLI"
+      #     ./wizcli docker tag --image ghcr.io/normalenterprise/wiz_test:rc --digest ${{ steps.rc_image.outputs.digest }}
+      #     echo "Tag WizCLI 2"
+      #     ./wizcli docker tag --image ghcr.io/normalenterprise/wiz_test:rc
 
+      - name: Upload SARIF file
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          # Path to SARIF file relative to the root of the repository
+          sarif_file: output_scan.sarif
+          # Optional category for the results
+          # Used to differentiate multiple results for one commit
+          category: wiz

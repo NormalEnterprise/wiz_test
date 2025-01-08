@@ -66,8 +66,8 @@ jobs:
       - name: Run wiz-cli docker image scan
         id: run-cli
         run: |
-          # Store wiz output as sarif and human readable format
-          ./wizcli docker scan --image ghcr.io/normalenterprise/wiz_test:rc --policy "jannasch - vcs - vuln" --tag github_action_run_id=${{ github.run_id }} --policy-hits-only --output output_scan.sarif,sarif --output results.txt,human
+          # Store wiz output as sarif and human readable format, -C for no color, -S for no style
+          ./wizcli docker scan --image ghcr.io/normalenterprise/wiz_test:rc --policy "jannasch - vcs - vuln" --tag github_action_run_id=${{ github.run_id }} --policy-hits-only --output output_scan.sarif,sarif --output results.txt,human -C -S
 
       # - name: Fetch digest of Docker image for Graph enrichment
       #   run: |

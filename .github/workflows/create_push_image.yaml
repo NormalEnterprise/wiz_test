@@ -1,12 +1,6 @@
 
 name: Test
 on: workflow_dispatch
-permissions:
-  security-events: write
-  pull-requests: read
-  contents: write
-  statuses: write
-  actions: read
 
 jobs:
   build-images:
@@ -14,14 +8,21 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 60
     permissions:
+      security-events: write
       contents: read
       packages: write
+      pull-requests: write
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      - name: Set up GitHub CLI
+        uses: actions/setup-gh@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -61,7 +62,10 @@ jobs:
           WIZ_CLIENT_SECRET: ${{ secrets.WIZ_CLIENT_SECRET }}
 
       - name: Run wiz-cli docker image scan
-        run: ./wizcli docker scan --image ghcr.io/normalenterprise/wiz_test:rc --policy "jannasch - vcs - vuln" --tag github_action_run_id=${{ github.run_id }} --output output_scan.sarif,sarif
+        id: run-cli
+        run: |
+          output=$(./wizcli docker scan --image ghcr.io/normalenterprise/wiz_test:rc --policy "jannasch - vcs - vuln" --tag github_action_run_id=${{ github.run_id }} --output output_scan.sarif,sarif)
+          echo "::set-output name=cli_output::$output"
 
       # - name: Fetch digest of Docker image for Graph enrichment
       #   run: |
@@ -70,6 +74,13 @@ jobs:
       #     ./wizcli docker tag --image ghcr.io/normalenterprise/wiz_test:rc --digest ${{ steps.rc_image.outputs.digest }}
       #     echo "Tag WizCLI 2"
       #     ./wizcli docker tag --image ghcr.io/normalenterprise/wiz_test:rc
+
+      - name: Comment on PR
+        if: ${{ github.event_name == 'pull_request' }}
+        run: |
+          gh pr comment ${{ github.event.pull_request.number }} --body "$RUNNER_OUTPUT"
+        env:
+          RUNNER_OUTPUT: ${{ steps.run-cli.outputs.cli_output }}
 
       - name: Upload SARIF file
         uses: github/codeql-action/upload-sarif@v3

@@ -68,8 +68,6 @@ jobs:
         run: |
           # Store wiz output as sarif and human readable format
           ./wizcli docker scan --image ghcr.io/normalenterprise/wiz_test:rc --policy "jannasch - vcs - vuln" --tag github_action_run_id=${{ github.run_id }} --policy-hits-only --output output_scan.sarif,sarif --output results.txt,human
-          output=$(cat results.txt)
-          echo "::set-output name=cli_output::$output"
 
       # - name: Fetch digest of Docker image for Graph enrichment
       #   run: |
@@ -83,9 +81,8 @@ jobs:
         if: ${{ github.event_name == 'pull_request' }}
         run: |
           # Comment results into PR
-          gh pr comment ${{ github.event.pull_request.number }} --body "$RUNNER_OUTPUT"
+          gh pr comment ${{ github.event.pull_request.number }} --body-file results.txt
         env:
-          RUNNER_OUTPUT: ${{ steps.run-cli.outputs.cli_output }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload SARIF file
